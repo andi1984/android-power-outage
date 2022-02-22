@@ -1,6 +1,8 @@
 package com.andi1984.poweroutage
 
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
@@ -12,6 +14,7 @@ import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+
 
 class MainActivity : AppCompatActivity() {
     val MESSAGE_ONLINE = "Strom ist wieder da."
@@ -56,8 +59,52 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendSMS(phoneNumber: String, message: String) {
+        println("Send sms to '$phoneNumber'")
         val sentPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_SENT"), 0)
-        SmsManager.getDefault().sendTextMessage(phoneNumber, null, message, sentPI, null)
+        val deliveredPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_DELIVERED"), 0)
+        val SENT = "SMS_SENT"
+        val DELIVERED = "SMS_DELIVERED"
+
+        this@MainActivity.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(arg0: Context, arg1: Intent) {
+                    when (resultCode) {
+                        RESULT_OK -> {}
+                        SmsManager.RESULT_ERROR_GENERIC_FAILURE -> {
+                            println("SMS - Generic failure")
+                        }
+                        SmsManager.RESULT_ERROR_NO_SERVICE -> {
+                            println("SMS - No Service")
+                        }
+                        SmsManager.RESULT_ERROR_NULL_PDU -> {
+                            println("SMS - Null PDU")
+                        }
+                        SmsManager.RESULT_ERROR_RADIO_OFF -> {
+                            println("Radio off")
+                        }
+                    }
+                }
+            }, IntentFilter(SENT)
+        )
+        // ---when the SMS has been delivered---
+        // ---when the SMS has been delivered---
+        this@MainActivity.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(arg0: Context, arg1: Intent) {
+                    when (resultCode) {
+                        RESULT_OK -> {
+                            println("SMS - OK")
+                        }
+                        RESULT_CANCELED -> {
+                            println("SMS - Canceled")
+                        }
+                    }
+                }
+            }, IntentFilter(DELIVERED)
+        )
+
+        // TODO: Understand whether this works or not?
+        this@MainActivity.getSystemService(SmsManager::class.java).sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI)
     }
 
     private fun sendSMSWorkflow(message: String) {
@@ -71,6 +118,7 @@ class MainActivity : AppCompatActivity() {
         if(smsSwitch.isChecked) {
             println("Send SMS!!!")
             // Send SMS to both
+            println("${primaryPhoneNumber.text.toString()} is valid? ${PhoneNumberUtils.isGlobalPhoneNumber(primaryPhoneNumber.text.toString())}")
             if(PhoneNumberUtils.isGlobalPhoneNumber(primaryPhoneNumber.text.toString())) {
                 sendSMS(primaryPhoneNumber.text.toString(), message)
             }

@@ -5,30 +5,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.BatteryManager
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
 class MainActivity : AppCompatActivity() {
     val MESSAGE_ONLINE = "Strom ist wieder da."
     val MESSAGE_OFFLINE = "Es gab einen Stromausfall!"
-
-    private fun getBatteryStatus():Int? {
-        val intent =
-            this@MainActivity.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        return intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1)
-    }
-
-    private fun isDeviceOnAC():Boolean {
-        return getBatteryStatus() == BatteryManager.BATTERY_PLUGGED_AC
-    }
 
     private fun powerOffEvent() {
         // Send SMS that power went off
@@ -129,18 +119,53 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    var wasDeviceOnAC:Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var wasDeviceOnAC = isDeviceOnAC()
 
-        val scheduledEx = Executors.newScheduledThreadPool(1)
+        val checkChargeButton = findViewById<Button>(R.id.check_charge_button)
+        checkChargeButton.setOnClickListener {
+            updateStatus(this)
+        }
 
-        val printStatus = Runnable {
-            val isDeviceCurrentlyOnAC = isDeviceOnAC()
-            if(isDeviceCurrentlyOnAC != wasDeviceOnAC) {
-                if(!wasDeviceOnAC && isDeviceCurrentlyOnAC) {
+        updateStatus(this)
+
+        Intent(this, BatteryService::class.java).also { intent ->
+            startForegroundService(intent)
+        }
+
+        val localReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                context?.let {
+                    updateStatus(context)
+                }
+            }
+        }
+
+        // Listen for updates from the service via local broadcast manager
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(Intent.ACTION_POWER_CONNECTED)
+        intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, intentFilter)
+   }
+
+    fun updateStatus(context: Context){
+        val isDeviceOnAC = BatteryMonitor().isDeviceOnAC(context)
+
+        val isChargingLabel = findViewById<TextView>(R.id.is_charging_label)
+        isChargingLabel.setText(if (isDeviceOnAC) "Power connected" else "Power disconnected")
+
+        if ( wasDeviceOnAC == null ) {
+            wasDeviceOnAC = isDeviceOnAC
+            return
+        }
+
+        wasDeviceOnAC?.let {
+            if( isDeviceOnAC != it) {
+                if(!it && isDeviceOnAC) {
                     // Power went on -->
                     powerOnEvent()
                 } else {
@@ -149,12 +174,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Update last device state
-                wasDeviceOnAC = isDeviceCurrentlyOnAC
+                wasDeviceOnAC = isDeviceOnAC
             } else {
                 println("nothing changed")
             }
         }
-
-        scheduledEx.scheduleAtFixedRate(printStatus, 0, 10, TimeUnit.SECONDS)
-   }
+    }
 }

@@ -142,6 +142,34 @@ class MainActivity : AppCompatActivity() {
                 context?.let {
                     updateStatus(context)
                 }
+
+                intent?.let {
+                    val isDeviceOnAC = it.action.equals(Intent.ACTION_POWER_CONNECTED)
+
+                    if (wasDeviceOnAC == null) {
+                        wasDeviceOnAC = isDeviceOnAC
+                        return
+                    }
+
+                    println("Before: $wasDeviceOnAC, Now: $isDeviceOnAC")
+
+                    wasDeviceOnAC?.let {
+                        if (isDeviceOnAC != it) {
+                            if (!it && isDeviceOnAC) {
+                                // Power went on -->
+                                powerOnEvent()
+                            } else {
+                                // Power went off -->
+                                powerOffEvent()
+                            }
+
+                            // Update last device state
+                            wasDeviceOnAC = isDeviceOnAC
+                        } else {
+                            println("nothing changed")
+                        }
+                    }
+                }
             }
         }
 
@@ -155,29 +183,12 @@ class MainActivity : AppCompatActivity() {
     fun updateStatus(context: Context){
         val isDeviceOnAC = BatteryMonitor().isDeviceOnAC(context)
 
+        // Update wasDeviceOnAC in the initial case
+        if(wasDeviceOnAC == null) {
+            wasDeviceOnAC = isDeviceOnAC
+        }
+
         val isChargingLabel = findViewById<TextView>(R.id.is_charging_label)
         isChargingLabel.setText(if (isDeviceOnAC) "Power connected" else "Power disconnected")
-
-        if ( wasDeviceOnAC == null ) {
-            wasDeviceOnAC = isDeviceOnAC
-            return
-        }
-
-        wasDeviceOnAC?.let {
-            if( isDeviceOnAC != it) {
-                if(!it && isDeviceOnAC) {
-                    // Power went on -->
-                    powerOnEvent()
-                } else {
-                    // Power went off -->
-                    powerOffEvent()
-                }
-
-                // Update last device state
-                wasDeviceOnAC = isDeviceOnAC
-            } else {
-                println("nothing changed")
-            }
-        }
     }
 }

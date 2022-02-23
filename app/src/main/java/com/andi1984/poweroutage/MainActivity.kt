@@ -1,6 +1,7 @@
 package com.andi1984.poweroutage
 
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -50,8 +51,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendSMS(phoneNumber: String, message: String) {
         println("Send sms to '$phoneNumber'")
-        val sentPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_SENT"), 0)
-        val deliveredPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_DELIVERED"), 0)
+        val sentPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_SENT"), FLAG_IMMUTABLE)
+        val deliveredPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_DELIVERED"), FLAG_IMMUTABLE)
         val SENT = "SMS_SENT"
         val DELIVERED = "SMS_DELIVERED"
 

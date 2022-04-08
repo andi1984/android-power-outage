@@ -9,7 +9,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:layout_width="wrap_content"
@@ -17,12 +23,11 @@
             android:text="Power 2 SMS"
             android:textSize="34sp" />
 
-        <Switch
-            android:id="@+id/debugger_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="Debug" />
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="?android:attr/listDivider" />
 
         <Switch
             android:id="@+id/sms_switch"
@@ -38,7 +43,9 @@
             android:ems="10"
             android:hint="@android:string/emptyPhoneNumber"
             android:inputType="phone"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:textColorHint="#757575"
+            android:autofillHints="" />
 
         <EditText
             android:id="@+id/phone2"
@@ -47,7 +54,8 @@
             android:ems="10"
             android:hint="@android:string/emptyPhoneNumber"
             android:inputType="phone"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:textColorHint="#757575" />
 
         <TextView
             android:id="@+id/is_charging_label"
@@ -60,6 +68,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Check now" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Made with ♡ from Andi" />
 
     </LinearLayout>
 

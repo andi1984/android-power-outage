@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
         println("POWER OFF")
 
         // Send SMS that power went on
-        debuggerWorkflow(MESSAGE_OFFLINE)
         sendSMSWorkflow(MESSAGE_OFFLINE)
     }
 
@@ -34,19 +33,7 @@ class MainActivity : AppCompatActivity() {
         println("POWER ON")
 
         // Send SMS that power went on
-        debuggerWorkflow(MESSAGE_ONLINE)
         sendSMSWorkflow(MESSAGE_ONLINE)
-    }
-
-    private fun debuggerWorkflow(message: String) {
-        // Check whether checkbox is enabled
-        val debuggerSwitch = findViewById<Switch>(R.id.debugger_switch)
-
-        if(!!debuggerSwitch.isChecked) {
-
-            // TODO: Show message in the UI
-            println(message)
-        }
     }
 
     private fun sendSMS(phoneNumber: String, message: String) {

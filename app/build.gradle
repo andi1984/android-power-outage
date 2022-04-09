@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.andi1984.poweroutage"
         minSdk 21
-        targetSdk 31
+        targetSdk 24
         versionCode 1
         versionName "1.0"
 

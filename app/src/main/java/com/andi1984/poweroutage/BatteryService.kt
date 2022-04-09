@@ -24,7 +24,7 @@ class BatteryService : Service() {
     }
 
     override fun onStartCommand(resultIntent: Intent?, resultCode: Int, startId: Int): Int {
-
+        // TODO: Android 7 support
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         val notificationService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
@@ -122,7 +124,11 @@ class MainActivity : AppCompatActivity() {
         updateStatus(this)
 
         Intent(this, BatteryService::class.java).also { intent ->
-            startForegroundService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
         }
 
         val localReceiver = object : BroadcastReceiver() {

@@ -8,8 +8,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class BatteryService : Service() {
@@ -25,12 +27,7 @@ class BatteryService : Service() {
 
     override fun onStartCommand(resultIntent: Intent?, resultCode: Int, startId: Int): Int {
 
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val notificationService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
-        notificationService.createNotificationChannel(channel)
-        val notification: Notification = Notification.Builder(this, channel.id)
-            .build()
+        var notification = buildNotification();
         startForeground(NOTIFICATION_ID, notification)
 
         val filter = IntentFilter()
@@ -63,6 +60,22 @@ class BatteryService : Service() {
                     it1
                 )
             } }
+        }
+    }
+
+    private fun buildNotification(): Notification {
+        return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // 8 and above
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val notificationService = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
+            notificationService.createNotificationChannel(channel)
+            Notification.Builder(this, channel.id)
+                .build()
+        } else {
+            // 7 and lower
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .build()
         }
     }
 }

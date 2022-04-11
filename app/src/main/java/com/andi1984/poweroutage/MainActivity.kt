@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
@@ -38,8 +39,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendSMS(phoneNumber: String, message: String) {
         println("Send sms to '$phoneNumber'")
-        val sentPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_SENT"), FLAG_IMMUTABLE)
-        val deliveredPI: PendingIntent = PendingIntent.getBroadcast(this, 0, Intent("SMS_DELIVERED"), FLAG_IMMUTABLE)
+        val sentPI: PendingIntent =
+            PendingIntent.getBroadcast(this, 0, Intent("SMS_SENT"), FLAG_IMMUTABLE)
+        val deliveredPI: PendingIntent =
+            PendingIntent.getBroadcast(this, 0, Intent("SMS_DELIVERED"), FLAG_IMMUTABLE)
         val SENT = "SMS_SENT"
         val DELIVERED = "SMS_DELIVERED"
 
@@ -82,7 +85,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         // TODO: Understand whether this works or not?
-        this@MainActivity.getSystemService(SmsManager::class.java).sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI)
+        this@MainActivity.getSystemService(SmsManager::class.java)
+            .sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI)
     }
 
     private fun sendSMSWorkflow(message: String) {
@@ -93,21 +97,27 @@ class MainActivity : AppCompatActivity() {
         val primaryPhoneNumber = findViewById<EditText>(R.id.phone1)
         val secondaryPhoneNumber = findViewById<EditText>(R.id.phone2)
 
-        if(smsSwitch.isChecked) {
+        if (smsSwitch.isChecked) {
             println("Send SMS!!!")
             // Send SMS to both
-            println("${primaryPhoneNumber.text.toString()} is valid? ${PhoneNumberUtils.isGlobalPhoneNumber(primaryPhoneNumber.text.toString())}")
-            if(PhoneNumberUtils.isGlobalPhoneNumber(primaryPhoneNumber.text.toString())) {
+            println(
+                "${primaryPhoneNumber.text.toString()} is valid? ${
+                    PhoneNumberUtils.isGlobalPhoneNumber(
+                        primaryPhoneNumber.text.toString()
+                    )
+                }"
+            )
+            if (PhoneNumberUtils.isGlobalPhoneNumber(primaryPhoneNumber.text.toString())) {
                 sendSMS(primaryPhoneNumber.text.toString(), message)
             }
 
-            if(PhoneNumberUtils.isGlobalPhoneNumber(secondaryPhoneNumber.text.toString())) {
+            if (PhoneNumberUtils.isGlobalPhoneNumber(secondaryPhoneNumber.text.toString())) {
                 sendSMS(secondaryPhoneNumber.text.toString(), message)
             }
         }
     }
 
-    var wasDeviceOnAC:Boolean? = null
+    var wasDeviceOnAC: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,7 +132,7 @@ class MainActivity : AppCompatActivity() {
         updateStatus(this)
 
         Intent(this, BatteryService::class.java).also { intent ->
-            startForegroundService(intent)
+            startService(intent)
         }
 
         val localReceiver = object : BroadcastReceiver() {
@@ -166,13 +176,13 @@ class MainActivity : AppCompatActivity() {
         intentFilter.addAction(Intent.ACTION_POWER_CONNECTED)
         intentFilter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         LocalBroadcastManager.getInstance(this).registerReceiver(localReceiver, intentFilter)
-   }
+    }
 
-    fun updateStatus(context: Context){
+    fun updateStatus(context: Context) {
         val isDeviceOnAC = BatteryMonitor().isDeviceOnAC(context)
 
         // Update wasDeviceOnAC in the initial case
-        if(wasDeviceOnAC == null) {
+        if (wasDeviceOnAC == null) {
             wasDeviceOnAC = isDeviceOnAC
         }
 

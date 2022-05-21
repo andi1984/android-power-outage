@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
@@ -84,9 +83,9 @@ class MainActivity : AppCompatActivity() {
             }, IntentFilter(DELIVERED)
         )
 
-        // TODO: Understand whether this works or not?
-        this@MainActivity.getSystemService(SmsManager::class.java)
-            .sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI)
+        val smsManager = SmsManager.getDefault()
+
+        smsManager.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI)
     }
 
     private fun sendSMSWorkflow(message: String) {
